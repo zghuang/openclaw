@@ -929,7 +929,7 @@ If you are running macOS in a VM, see [macOS VM](/install/macos-vm).
 
 ### What is OpenClaw in one paragraph
 
-OpenClaw is a personal AI assistant you run on your own devices. It replies on the messaging surfaces you already use (WhatsApp, Telegram, Slack, Mattermost (plugin), Discord, Google Chat, Signal, iMessage, WebChat) and can also do voice + a live Canvas on supported platforms. The **Gateway** is the always-on control plane; the assistant is the product.
+OpenClaw is a personal AI assistant you run on your own devices. It replies on the messaging surfaces you already use (WhatsApp, Telegram, Slack, Mattermost (plugin), Discord, Google Chat, Signal, iMessage, WebChat) and can also do voice + a live Canvas on supported platforms. The **Gateway** is the always-on control plane; the assistant is the product. Under the hood, OpenClaw embeds Pi (`@mariozechner/pi-coding-agent`) as the agent runtime, then layers channel routing, policy, tools, and ops on top.
 
 ### What's the value proposition
 
@@ -975,6 +975,8 @@ Everyday wins usually look like:
 - **Reminders and follow ups:** cron or heartbeat driven nudges and checklists.
 - **Browser automation:** filling forms, collecting data, and repeating web tasks.
 - **Cross device coordination:** send a task from your phone, let the Gateway run it on a server, and get the result back in chat.
+
+Best-practice ceiling: OpenClaw is strongest as an operator-in-the-loop assistant for planning, coding, automation, and drafting. Keep sensitive or irreversible actions (payments, production deletes, mass outbound messaging) behind explicit human review and approvals.
 
 ### Can OpenClaw help with lead gen outreach ads and blogs for a SaaS
 
@@ -1393,6 +1395,18 @@ The Gateway watches the config and supports hot-reload:
 
 - `gateway.reload.mode: "hybrid"` (default): hot-apply safe changes, restart for critical ones
 - `hot`, `restart`, `off` are also supported
+
+Practical split:
+
+- Usually **no manual restart** for `agent`, `agents`, `models`, `routing`, `tools`, `channels.*`, `hooks`, `cron`, and most UX/logging fields.
+- Gateway/infrastructure settings (for example `gateway.*` server settings, `plugins`, `canvasHost`, `discovery`) are restart-sensitive. In `hybrid`, OpenClaw handles required restarts automatically.
+- `gateway.reload` and `gateway.remote` are special: they do not trigger a restart by themselves.
+
+About WeChat UI vs CLI:
+
+- WeChat/WebChat is great for **session-level controls** (for example `/model`, `/new`, prompts, task execution).
+- **Global config management** is best done with `openclaw config set`, `openclaw configure`, or editing `~/.openclaw/openclaw.json` directly.
+- Use `config.apply` only when you intentionally replace the full config; use `config.patch`/`config.set` for targeted updates.
 
 ### How do I enable web search and web fetch
 
@@ -2005,6 +2019,8 @@ Safe options:
 - `openclaw models set ...` (updates just model config)
 - `openclaw configure --section model` (interactive)
 - edit `agents.defaults.model` in `~/.openclaw/openclaw.json`
+
+If a provider `baseUrl` in `models.json` keeps reverting (often noticed after restart): that file is managed from config (`models.providers`) plus implicit provider detection, and may be regenerated during startup/model operations. Persist endpoint changes in `models.providers.<provider>.baseURL` (or your provider setup flow), not as ad-hoc edits to generated `models.json`.
 
 Avoid `config.apply` with a partial object unless you intend to replace the whole config.
 If you did overwrite config, restore from backup or re-run `openclaw doctor` to repair.
