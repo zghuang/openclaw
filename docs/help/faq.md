@@ -2020,7 +2020,7 @@ Safe options:
 - `openclaw configure --section model` (interactive)
 - edit `agents.defaults.model` in `~/.openclaw/openclaw.json`
 
-If a provider `baseUrl` in `models.json` keeps reverting after restart: that file is managed from config (`models.providers`) plus implicit provider detection. Persist endpoint changes in `models.providers.<provider>.baseURL` (or your provider setup flow), not as ad-hoc edits to generated `models.json`.
+If a provider `baseUrl` in `models.json` keeps reverting (often noticed after restart): that file is managed from config (`models.providers`) plus implicit provider detection, and may be regenerated during startup/model operations. Persist endpoint changes in `models.providers.<provider>.baseURL` (or your provider setup flow), not as ad-hoc edits to generated `models.json`.
 
 Avoid `config.apply` with a partial object unless you intend to replace the whole config.
 If you did overwrite config, restore from backup or re-run `openclaw doctor` to repair.
